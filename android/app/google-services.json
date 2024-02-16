@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "334537747036",
+    "firebase_url": "https://cas-aqt-default-rtdb.firebaseio.com",
+    "project_id": "cas-aqt",
+    "storage_bucket": "cas-aqt.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:334537747036:android:49cde8b3187dce21ae1499",
+        "android_client_info": {
+          "package_name": "pk.org.cas.aqua_tracker_management"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDJJKSA6_06j9KeF0t5nNqg21kIEGLBUt8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
