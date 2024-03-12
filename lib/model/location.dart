@@ -4,23 +4,19 @@ import 'dart:convert';
 class Location {
   String latitude;
   String longitude;
-  String address;
 
   Location({
     required this.latitude,
     required this.longitude,
-    required this.address,
   });
 
   Location copyWith({
     String? latitude,
     String? longitude,
-    String? address,
   }) {
     return Location(
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
-      address: address ?? this.address,
     );
   }
 
@@ -28,15 +24,13 @@ class Location {
     return <String, dynamic>{
       'latitude': latitude,
       'longitude': longitude,
-      'address': address,
     };
   }
 
-  factory Location.fromMap(Map<dynamic, dynamic> map) {
+  factory Location.fromMap(Map map) {
     return Location(
-      latitude: map['latitude'] as String,
-      longitude: map['longitude'] as String,
-      address: map['address'] as String,
+      latitude: map['latitude'].toString(),
+      longitude: map['longitude'].toString(),
     );
   }
 
@@ -45,15 +39,19 @@ class Location {
   factory Location.fromJson(String source) => Location.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() => 'Location(latitude: $latitude, longitude: $longitude, address: $address)';
+  String toString() {
+    return 'ClientLocation(latitude: $latitude, longitude: $longitude)';
+  }
 
   @override
   bool operator ==(covariant Location other) {
     if (identical(this, other)) return true;
 
-    return other.latitude == latitude && other.longitude == longitude && other.address == address;
+    return other.latitude == latitude && other.longitude == longitude;
   }
 
   @override
-  int get hashCode => latitude.hashCode ^ longitude.hashCode ^ address.hashCode;
+  int get hashCode {
+    return latitude.hashCode ^ longitude.hashCode;
+  }
 }

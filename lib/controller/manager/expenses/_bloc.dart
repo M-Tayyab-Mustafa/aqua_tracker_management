@@ -1,22 +1,21 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
 import 'dart:math';
 import 'dart:developer' as developer;
-import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'package:aqua_tracker_managements/utils/constants.dart';
+import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../model/expense.dart';
 import '../../../model/individual_bar.dart';
 import '../../../model/user.dart';
-import '../../../utils/constants.dart';
-import '../../../utils/local_storage/hive.dart';
 import '../../../utils/validation.dart';
-import '../../../utils/widget/button.dart';
-import '../../../utils/widget/text_field.dart';
+import '../../../utils/widgets/button.dart';
+import '../../../utils/widgets/text_field.dart';
 part '_event.dart';
 part '_state.dart';
 
 class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
-  var firebaseFs = FirebaseFirestore.instance;
   final verticalScrollbarController = ScrollController(keepScrollOffset: true);
   final horizontalScrollbarController = ScrollController(keepScrollOffset: true);
   final formKey = GlobalKey<FormState>();
@@ -48,25 +47,22 @@ class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CustomTextField(
-                    hintText: 'Cost Name',
-                    controller: costNameController,
-                    keyboardType: TextInputType.text,
-                    validator: simpleFieldValidation,
-                  ),
+                      hintText: 'Cost Name',
+                      controller: costNameController,
+                      keyboardType: TextInputType.text,
+                      validator: simpleFieldValidation),
                   CustomTextField(
-                    hintText: 'Amount',
-                    controller: amountController,
-                    keyboardType: TextInputType.number,
-                    validator: simpleFieldValidation,
-                  ),
+                      hintText: 'Amount',
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      validator: simpleFieldValidation),
                   CustomTextField(
-                    hintText: 'Detail',
-                    controller: detailController,
-                    maxLength: 500,
-                    maxLines: 4,
-                    keyboardType: TextInputType.multiline,
-                    validator: simpleFieldValidation,
-                  ),
+                      hintText: 'Detail',
+                      controller: detailController,
+                      maxLength: 500,
+                      maxLines: 4,
+                      keyboardType: TextInputType.multiline,
+                      validator: simpleFieldValidation),
                 ],
               ),
             ),
@@ -80,37 +76,37 @@ class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
                     loading;
                     Navigator.pop(dialogContext);
                     try {
-                      for (Expense expense in expenses) {
-                        var saleDateTime = DateTime.fromMillisecondsSinceEpoch(expense.date);
-                        var now = DateTime.now();
-                        if (now.day == saleDateTime.day &&
-                            now.month == saleDateTime.month &&
-                            now.year == saleDateTime.year) {
-                          var newAmount = expense.amount + double.parse(amountController.text);
-                          expenses[expenses.indexOf(expense)] = Expense(
-                              date: expense.date,
-                              costName: '${expense.costName},\n${costNameController.text}',
-                              details: '${expense.details},\n${detailController.text}',
-                              amount: newAmount);
-                          alreadyExists = true;
-                          break;
+                      await firebaseCompanyDoc.then((doc) async {
+                        for (Expense expense in expenses) {
+                          var saleDateTime = DateTime.fromMillisecondsSinceEpoch(expense.date);
+                          var now = DateTime.now();
+                          if (now.day == saleDateTime.day &&
+                              now.month == saleDateTime.month &&
+                              now.year == saleDateTime.year) {
+                            var newAmount = expense.amount + double.parse(amountController.text);
+                            expenses[expenses.indexOf(expense)] = Expense(
+                                date: expense.date,
+                                costName: '${expense.costName},\n${costNameController.text}',
+                                details: '${expense.details},\n${detailController.text}',
+                                amount: newAmount);
+                            alreadyExists = true;
+                            break;
+                          }
                         }
-                      }
-                      if (!alreadyExists) {
-                        expenses.add(Expense(
-                            date: DateTime.now().millisecondsSinceEpoch,
-                            costName: costNameController.text,
-                            details: detailController.text,
-                            amount: double.parse(amountController.text)));
-                      }
-                      List newExpenses = expenses.map((e) => e.toMap()).toList();
-                      await firebaseFs
-                          .collection(fBCompanyCollectionKey)
-                          .doc(user.companyName)
-                          .collection(fBBranchesCollectionKey)
-                          .doc(user.branch)
-                          .update({'expenses': newExpenses}).then((branchDoc) {
-                        _reInit;
+                        if (!alreadyExists) {
+                          expenses.add(Expense(
+                              date: DateTime.now().millisecondsSinceEpoch,
+                              costName: costNameController.text,
+                              details: detailController.text,
+                              amount: double.parse(amountController.text)));
+                        }
+                        List newExpenses = expenses.map((e) => e.toMap()).toList();
+                        await doc
+                            .collection(fBBranchesCollectionKey)
+                            .doc(user.branch)
+                            .update({'expenses': newExpenses}).then((branchDoc) {
+                          _reInit;
+                        });
                       });
                     } catch (e) {
                       developer.log(e.toString());
@@ -133,28 +129,24 @@ class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
 
   _init() async {
     try {
-      user = await LocalDatabase.getUser();
-      await firebaseFs
-          .collection(fBCompanyCollectionKey)
-          .doc(user.companyName)
-          .collection(fBBranchesCollectionKey)
-          .doc(user.branch)
-          .get()
-          .then((branchDoc) {
-        expenses = (branchDoc.data()!['expenses'] as List)
-            .map<Expense>((expenses) => Expense.fromMap(expenses))
-            .toList()
-            .reversed
-            .toList();
-        if (expenses.isNotEmpty) {
-          maxYAxis =
-              expenses.map((e) => e.amount).reduce(max) + 500; //* To make sure Graph always greater then max Value
-          individualBars = List.generate(expenses.length,
-              (index) => IndividualBar(x: index, y: expenses[index].amount, date: expenses[index].date));
-          individualBars = individualBars.reversed.toList();
-        }
+      await firebaseCompanyDoc.then((doc) async {
+        user = await localStorage.user;
+        await doc.collection(fBBranchesCollectionKey).doc(user.branch).get().then((branchDoc) {
+          expenses = (branchDoc.data()!['expenses'] as List)
+              .map<Expense>((expenses) => Expense.fromMap(expenses))
+              .toList()
+              .reversed
+              .toList();
+          if (expenses.isNotEmpty) {
+            maxYAxis =
+                expenses.map((e) => e.amount).reduce(max) + 500; // To make sure Graph always greater then max Value
+            individualBars = List.generate(expenses.length,
+                (index) => IndividualBar(x: index, y: expenses[index].amount, date: expenses[index].date));
+            individualBars = individualBars.reversed.toList();
+          }
 
-        loaded;
+          loaded;
+        });
       });
     } catch (e) {
       developer.log(e.toString());

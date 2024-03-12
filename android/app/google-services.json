@@ -1,22 +1,41 @@
 {
   "project_info": {
-    "project_number": "334537747036",
-    "firebase_url": "https://cas-aqt-default-rtdb.firebaseio.com",
-    "project_id": "cas-aqt",
-    "storage_bucket": "cas-aqt.appspot.com"
+    "project_number": "376221409054",
+    "firebase_url": "https://aqua-tracker-d99e6-default-rtdb.firebaseio.com",
+    "project_id": "aqua-tracker-d99e6",
+    "storage_bucket": "aqua-tracker-d99e6.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:334537747036:android:49cde8b3187dce21ae1499",
+        "mobilesdk_app_id": "1:376221409054:android:472ce4e34f933c53e4330f",
         "android_client_info": {
-          "package_name": "pk.org.cas.aqua_tracker_management"
+          "package_name": "pk.cas.org.aqua_tracker_admin"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDJJKSA6_06j9KeF0t5nNqg21kIEGLBUt8"
+          "current_key": "AIzaSyBb8As2UCL_fyMuwPP10F1DLJ7BxANPHSQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:376221409054:android:24da8ff5cb2356ace4330f",
+        "android_client_info": {
+          "package_name": "pk.cas.org.aqua_tracker_managements"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBb8As2UCL_fyMuwPP10F1DLJ7BxANPHSQ"
         }
       ],
       "services": {

@@ -26,7 +26,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -50,21 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDJJKSA6_06j9KeF0t5nNqg21kIEGLBUt8',
-    appId: '1:334537747036:android:49cde8b3187dce21ae1499',
-    messagingSenderId: '334537747036',
-    projectId: 'cas-aqt',
-    databaseURL: 'https://cas-aqt-default-rtdb.firebaseio.com',
-    storageBucket: 'cas-aqt.appspot.com',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCEymA8YKdppzPIndaJ0Y7xH-M7-UDZavs',
-    appId: '1:334537747036:ios:f0ae7cedf292f480ae1499',
-    messagingSenderId: '334537747036',
-    projectId: 'cas-aqt',
-    databaseURL: 'https://cas-aqt-default-rtdb.firebaseio.com',
-    storageBucket: 'cas-aqt.appspot.com',
-    iosBundleId: 'pk.org.cas.aquaTrackerManagement',
+    apiKey: 'AIzaSyBb8As2UCL_fyMuwPP10F1DLJ7BxANPHSQ',
+    appId: '1:376221409054:android:24da8ff5cb2356ace4330f',
+    messagingSenderId: '376221409054',
+    projectId: 'aqua-tracker-d99e6',
+    databaseURL: 'https://aqua-tracker-d99e6-default-rtdb.firebaseio.com',
+    storageBucket: 'aqua-tracker-d99e6.appspot.com',
   );
 }

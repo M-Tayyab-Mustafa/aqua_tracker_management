@@ -31,8 +31,7 @@ class MonthReport {
   factory MonthReport.fromMap(Map<String, dynamic> map) {
     return MonthReport(
       totalBottles: map['total_bottles'],
-      details:
-          Map<String, Details>.from((map['details'] as Map).map((key, value) => MapEntry(key, Details.fromMap(value)))),
+      details: Map<String, Details>.from((map['details'] as Map).map((key, value) => MapEntry(key, Details.fromMap(value)))),
     );
   }
 
@@ -54,26 +53,26 @@ class MonthReport {
   int get hashCode => totalBottles.hashCode ^ details.hashCode;
 }
 
-class YearReport {
+class YearlyReport {
   int date;
   String payment;
   int paymentStatus;
   MonthReport monthReport;
 
-  YearReport({
+  YearlyReport({
     required this.date,
     required this.payment,
     required this.paymentStatus,
     required this.monthReport,
   });
 
-  YearReport copyWith({
+  YearlyReport copyWith({
     int? date,
     String? payment,
     int? paymentStatus,
     MonthReport? monthReport,
   }) {
-    return YearReport(
+    return YearlyReport(
       date: date ?? this.date,
       payment: payment ?? this.payment,
       paymentStatus: paymentStatus ?? this.paymentStatus,
@@ -91,8 +90,8 @@ class YearReport {
     };
   }
 
-  factory YearReport.fromMap(Map<String, dynamic> map) {
-    return YearReport(
+  factory YearlyReport.fromMap(Map<String, dynamic> map) {
+    return YearlyReport(
       date: map['date'],
       payment: map['payment'] as String,
       paymentStatus: map['payment_status'],
@@ -102,7 +101,7 @@ class YearReport {
 
   String toJson() => json.encode(toMap());
 
-  factory YearReport.fromJson(String source) => YearReport.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory YearlyReport.fromJson(String source) => YearlyReport.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
@@ -110,13 +109,10 @@ class YearReport {
   }
 
   @override
-  bool operator ==(covariant YearReport other) {
+  bool operator ==(covariant YearlyReport other) {
     if (identical(this, other)) return true;
 
-    return other.date == date &&
-        other.payment == payment &&
-        other.paymentStatus == paymentStatus &&
-        other.monthReport == monthReport;
+    return other.date == date && other.payment == payment && other.paymentStatus == paymentStatus && other.monthReport == monthReport;
   }
 
   @override

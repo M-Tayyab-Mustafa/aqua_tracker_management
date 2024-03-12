@@ -1,44 +1,42 @@
 // ignore_for_file: invalid_use_of_visible_for_testing_member
-
-import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
+import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../model/user.dart';
-import '../../../screen/basic/about_us.dart';
-import '../../../screen/client/client.dart';
-import '../../../screen/manager/announcements/announcements.dart';
-import '../../../screen/manager/delivery_man/delivery_man.dart';
-import '../../../screen/manager/delivery_man/delivery_man_location.dart';
-import '../../../screen/manager/expenses/expenses.dart';
-import '../../../screen/manager/sales/sales.dart';
-import '../../../utils/widget/image_preview.dart';
-import '../../../screen/sign_in.dart';
 import '../../../utils/constants.dart';
-import '../../../utils/local_storage/hive.dart';
-import '../../../utils/widget/button.dart';
-import '../../../utils/widget/text_field.dart';
+import '../../../utils/firebase_push_notifications.dart';
+import '../../../utils/widgets/button.dart';
+import '../../../utils/widgets/error_dialog.dart';
+import '../../../view/basic_screen/about_us.dart';
+import '../../../view/client/client.dart';
+import '../../../view/manager/announcements/announcements.dart';
+import '../../../view/manager/delivery_man/delivery_man.dart';
+import '../../../view/manager/delivery_man_location/delivery_man_location.dart';
+import '../../../view/manager/expenses/expenses.dart';
+import '../../../view/manager/sales/sales.dart';
+import '../../../view/sign_in/sign_in.dart';
 
-part '_event.dart';
 part '_state.dart';
 
+part '_event.dart';
+
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
-  static bool showBackTabDialog = true;
-  final firebaseFS = FirebaseFirestore.instance;
-  final firebaseAuth = auth.FirebaseAuth.instance;
+  static bool backTabDialogForHomeScreen = true;
   late List listOfAds;
   late AnimationController _animation;
-  late Animation<double> _heightTween;
-  late Animation<double> _widthTween;
   late Animation<double> _rotationTween;
   late Animation<double> _opacityTween;
+  late Animation<double> _heightTween;
+  late Animation<double> _addsHeightTween;
+  late Animation<double> _widthTween;
   late Animation<double> _borderRadiusTween;
   late Animation<double> _boxShadowTween;
-  final double _addSize = screenSize.height * 0.33;
+  final double profileAvatarRadius = screenSize.width * 0.065;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final nameFormKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
@@ -48,24 +46,26 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final contactController = TextEditingController(text: contactFieldDefaultValue);
   String navigateTo = '';
   late User user;
-  HomeBloc() : super(Loading()) {
+  bool canPop = false;
+
+  HomeBloc(BuildContext context) : super(Loading()) {
+    FirebasePushNotifications.context = context;
     on<SignOut>(
       (event, emit) => showDialog(
-        context: event.context,
-        builder: (context) => AlertDialog.adaptive(
+        context: context,
+        builder: (dialogContext) => AlertDialog.adaptive(
           actionsAlignment: MainAxisAlignment.spaceBetween,
           title: const Text('Sign Out'),
           content: const Text('Do you want to sign out?'),
           actions: [
-            CustomButton(onPressed: () => Navigator.pop(context), title: 'Cancel'),
+            CustomButton(onPressed: () => Navigator.pop(dialogContext), title: 'Cancel'),
             CustomButton(
               onPressed: () async {
-                Navigator.pop(context);
-                await firebaseAuth.signOut();
-                LocalDatabase.removeUser().whenComplete(() {
+                Navigator.pop(dialogContext);
+                await auth.FirebaseAuth.instance.signOut();
+                localStorage.removeUser().whenComplete(() {
                   scaffoldKey.currentState!.closeDrawer();
-                  showBackTabDialog = false;
-                  event.context.pushReplacementNamed(SignInScreen.name);
+                  context.goNamed(SignInScreen.name);
                 });
               },
               primaryColor: true,
@@ -81,9 +81,99 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         ),
       ),
     );
-    on<AboutUs>((event, emit) {
-      event.context.pushNamed(AboutUsScreen.name);
+    on<ChangeName>((event, emit) async {
+      Navigator.pop(event.dialogContext);
+      try {
+        if (nameFormKey.currentState!.validate() && nameController.text != user.name) {
+          scaffoldKey.currentState!.closeEndDrawer();
+          _loading;
+          await (await firebaseCompanyDoc).collection(fBEmployeesCollectionKey).doc(user.uid).update({
+            'name': nameController.text,
+          }).whenComplete(() async {
+            await localStorage.updateName(name: nameController.text);
+            _loaded;
+            scaffoldKey.currentState?.openEndDrawer();
+          });
+        }
+      } catch (e) {
+        log(e.toString());
+        _error;
+      }
     });
+
+    on<ChangeEmail>((event, emit) async {
+      Navigator.pop(event.dialogContext);
+      try {
+        if (emailFormKey.currentState!.validate() && emailController.text != user.email) {
+          scaffoldKey.currentState!.closeEndDrawer();
+          _loading;
+          (await firebaseCompanyDoc).collection(fBBranchesCollectionKey).doc(user.branch).get().then((branchDoc) async {
+            await auth.FirebaseAuth.instance
+                .signInWithEmailAndPassword(email: user.email, password: branchDoc.data()![user.uid])
+                .then((reLoggedInNewUserCredential) async {
+              await reLoggedInNewUserCredential.user!.verifyBeforeUpdateEmail(emailController.text).whenComplete(
+                    () => showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => AlertDialog(
+                        title: const Text('You Change You\'r Email'),
+                        actionsAlignment: MainAxisAlignment.center,
+                        content: const Text(
+                            'We send you email To verify your new email after this you will be logged out and you have to sign in after verifying your new email'),
+                        actions: [
+                          CustomButton(
+                            title: 'OK',
+                            primaryColor: true,
+                            onPressed: () async {
+                              (await firebaseCompanyDoc)
+                                  .collection(fBEmployeesCollectionKey)
+                                  .doc(user.uid)
+                                  .update({'email': emailController.text});
+                              await auth.FirebaseAuth.instance.signOut();
+                              await localStorage.removeUser().whenComplete(() {
+                                scaffoldKey.currentState!.closeDrawer();
+                                _loaded;
+                                context.goNamed(SignInScreen.name);
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+            });
+          });
+        }
+      } catch (e) {
+        log(e.toString());
+        _error;
+      }
+    });
+
+    on<ChangeContact>((event, emit) async {
+      Navigator.pop(event.dialogContext);
+      try {
+        if (contactFormKey.currentState!.validate() && contactController.text != user.contact) {
+          scaffoldKey.currentState!.closeEndDrawer();
+          _loading;
+          await (await firebaseCompanyDoc).collection(fBEmployeesCollectionKey).doc(user.uid).update({
+            'contact': contactController.text,
+          }).whenComplete(() async {
+            await localStorage.updateContact(contact: contactController.text);
+            _loaded;
+            scaffoldKey.currentState?.openEndDrawer();
+          });
+        }
+      } catch (e) {
+        log(e.toString());
+        _error;
+      }
+    });
+
+    on<AboutUs>((event, emit) {
+      context.goNamed(AboutUsScreen.screenName);
+    });
+
     on<Client>((event, emit) {
       _animation.forward();
       navigateTo = ClientScreen.name;
@@ -108,232 +198,96 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       _animation.forward();
       navigateTo = AnnouncementsScreen.name;
     });
-    on<ProfileImagePreview>((event, emit) {
-      event.context.pushNamed(ImagePreviewScreen.name, extra: {'image_url': event.imageUrl, 'tag': event.imageUrl});
-    });
-    on<ChangeName>((event, emit) async {
-      await showDialog(
-        context: event.context,
-        barrierDismissible: false,
+
+    on<BackButtonTap>((event, emit) {
+      showDialog(
+        context: context,
         builder: (dialogContext) => AlertDialog.adaptive(
+          title: const Text('Exit'),
           actionsAlignment: MainAxisAlignment.spaceBetween,
-          title: const Text('Change You\'r Name'),
-          contentPadding: EdgeInsets.zero,
-          content: Form(
-            key: nameFormKey,
-            child: NameTextField(hintText: 'Name', controller: nameController),
-          ),
+          content: const Text('Are you sure you want to exit'),
           actions: [
-            CustomButton(onPressed: () => Navigator.pop(dialogContext, false), title: 'Cancel'),
+            CustomButton(onPressed: () => Navigator.pop(dialogContext), title: 'Cancel'),
             CustomButton(
               primaryColor: true,
               onPressed: () {
-                if (nameFormKey.currentState!.validate() && nameController.text != user.name) {
-                  Navigator.pop(dialogContext, true);
-                }
+                Navigator.pop(dialogContext);
+                exit(0);
               },
               title: 'Confirm',
             ),
           ],
         ),
-      ).then((returnValue) async {
-        if (returnValue) {
-          try {
-            _loading;
-            scaffoldKey.currentState!.closeEndDrawer();
-            await firebaseFS
-                .collection(fBCompanyCollectionKey)
-                .doc(user.companyName)
-                .collection(fBEmployeesCollectionKey)
-                .doc(user.uid)
-                .update({
-              'name': nameController.text,
-            }).whenComplete(() async {
-              user = user.copyWith(name: nameController.text);
-              await LocalDatabase.updateUser(user);
-              _loaded;
-              scaffoldKey.currentState?.openEndDrawer();
-            });
-          } catch (e) {
-            log(e.toString());
-            _error;
-          }
-        }
-      });
-    });
-    on<ChangeEmail>((event, emit) async {
-      await showDialog(
-        context: event.context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog.adaptive(
-          title: const Text('Change You\'r Email'),
-          contentPadding: EdgeInsets.zero,
-          actionsAlignment: MainAxisAlignment.spaceBetween,
-          content: Form(key: emailFormKey, child: EmailTextField(controller: emailController)),
-          actions: [
-            CustomButton(onPressed: () => Navigator.pop(dialogContext, false), title: 'Cancel'),
-            CustomButton(
-              onPressed: () {
-                if (emailFormKey.currentState!.validate() && emailController.text != user.email) {
-                  Navigator.pop(dialogContext, true);
-                }
-              },
-              title: 'Confirm',
-              primaryColor: true,
-            ),
-          ],
-        ),
-      ).then((returnValue) async {
-        if (returnValue) {
-          try {
-            _loading;
-            scaffoldKey.currentState!.closeEndDrawer();
-            await auth.FirebaseAuth.instance.currentUser!
-                .verifyBeforeUpdateEmail(emailController.text)
-                .whenComplete(() async {
-              await firebaseFS
-                  .collection(fBCompanyCollectionKey)
-                  .doc(user.companyName)
-                  .collection(fBEmployeesCollectionKey)
-                  .doc(user.uid)
-                  .update({'email': emailController.text});
-              await LocalDatabase.removeUser();
-              await auth.FirebaseAuth.instance.signOut().then((value) {
-                showDialog(
-                  context: event.context,
-                  barrierDismissible: false,
-                  builder: (context) => AlertDialog(
-                    title: const Text('You Change You\'r Email'),
-                    actionsAlignment: MainAxisAlignment.center,
-                    content: const Text(
-                        'We send you email To verify your new email after this you will be logged out and you have to sign in after verifying your new email'),
-                    actions: [
-                      CustomButton(
-                        title: 'OK',
-                        primaryColor: true,
-                        onPressed: () async {
-                          showBackTabDialog = false;
-                          context.goNamed(SignInScreen.name);
-                        },
-                      ),
-                    ],
-                  ),
-                );
-              });
-            });
-          } catch (e) {
-            log(e.toString());
-            _error;
-          }
-        }
-      });
-    });
-    on<ChangeContact>((event, emit) async {
-      await showDialog(
-        context: event.context,
-        barrierDismissible: false,
-        builder: (dialogContext) => AlertDialog.adaptive(
-          title: const Text('Change You\'r Contact'),
-          contentPadding: EdgeInsets.zero,
-          actionsAlignment: MainAxisAlignment.spaceBetween,
-          content:
-              Form(key: contactFormKey, child: ContactTextField(hintText: 'Contact', controller: contactController)),
-          actions: [
-            CustomButton(onPressed: () => Navigator.pop(dialogContext, false), title: 'Cancel'),
-            CustomButton(
-              onPressed: () {
-                if (contactFormKey.currentState!.validate() && contactController.text != user.contact) {
-                  Navigator.pop(dialogContext, true);
-                }
-              },
-              title: 'Confirm',
-              primaryColor: true,
-            ),
-          ],
-        ),
-      ).then((returnValue) async {
-        try {
-          _loading;
-          scaffoldKey.currentState!.closeEndDrawer();
-          await firebaseFS
-              .collection(fBCompanyCollectionKey)
-              .doc(user.companyName)
-              .collection(fBEmployeesCollectionKey)
-              .doc(user.uid)
-              .update({
-            'contact': contactController.text,
-          }).whenComplete(() async {
-            user = user.copyWith(contact: contactController.text);
-            await LocalDatabase.updateUser(user);
-            _loaded;
-            scaffoldKey.currentState?.openEndDrawer();
-          });
-        } catch (e) {
-          log(e.toString());
-          _error;
-        }
-      });
+      );
     });
   }
 
   initial(TickerProvider tickerProvider, {required BuildContext context}) async {
-    _animation = AnimationController(vsync: tickerProvider, duration: const Duration(milliseconds: 800));
+    _animation = AnimationController(vsync: tickerProvider, duration: const Duration(seconds: 1));
     _rotationTween =
         Tween<double>(begin: 0, end: 180).animate(CurvedAnimation(parent: _animation, curve: const Interval(0.0, 0.5)));
     _opacityTween =
-        Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _animation, curve: const Interval(0.0, 0.4)));
+        Tween<double>(begin: 1, end: 0).animate(CurvedAnimation(parent: _animation, curve: const Interval(0.0, 0.3)));
+    _addsHeightTween = Tween<double>(begin: screenSize.height * 0.35, end: 0)
+        .animate(CurvedAnimation(parent: _animation, curve: const Interval(0.4, 0.8)));
     _borderRadiusTween = Tween<double>(begin: smallBorderRadius, end: 0)
         .animate(CurvedAnimation(parent: _animation, curve: const Interval(0.5, 1)));
     _boxShadowTween =
         Tween<double>(begin: 2, end: 0).animate(CurvedAnimation(parent: _animation, curve: const Interval(0.5, 1)));
-    _heightTween = Tween<double>(begin: screenSize.height * 0.6, end: screenSize.height)
+    _heightTween = Tween<double>(begin: screenSize.height * 0.4, end: screenSize.height - kToolbarHeight)
         .animate(CurvedAnimation(parent: _animation, curve: const Interval(0.5, 1)));
     _widthTween = Tween<double>(begin: screenSize.width * 0.95, end: screenSize.width)
         .animate(CurvedAnimation(parent: _animation, curve: const Interval(0.5, 1)));
     _animation.addStatusListener((status) => _statusListener(status, context));
     _animation.addListener(() => _loaded);
-    user = await LocalDatabase.getUser();
-    await firebaseFS.collection(fBCompanyCollectionKey).doc(user.companyName).get().then((querySnapshot) async {
-      listOfAds = (querySnapshot.data()!)['banners'];
-      nameController.text = user.name;
-      emailController.text = user.email;
-      contactController.text = user.contact;
-      _loaded;
-    }).timeout(const Duration(seconds: 30), onTimeout: () => _error);
+    await firstInitialization;
   }
 
-  Future<void> _statusListener(AnimationStatus status, BuildContext context) async {
+  _statusListener(AnimationStatus status, BuildContext context) async {
     if (status == AnimationStatus.completed) {
       if (navigateTo == ClientScreen.name) {
-        context.pushNamed(ClientScreen.name);
+        context.goNamed(ClientScreen.name);
       } else if (navigateTo == DeliveryManLocationScreen.name) {
-        context.pushNamed(DeliveryManLocationScreen.name);
+        context.goNamed(DeliveryManLocationScreen.name);
       } else if (navigateTo == DeliveryManScreen.name) {
-        context.pushNamed(DeliveryManScreen.name);
+        context.goNamed(DeliveryManScreen.name);
       } else if (navigateTo == ExpensesScreen.name) {
-        context.pushNamed(ExpensesScreen.name);
+        context.goNamed(ExpensesScreen.name);
       } else if (navigateTo == SalesScreen.name) {
-        context.pushNamed(SalesScreen.name);
+        context.goNamed(SalesScreen.name);
       } else {
-        context.pushNamed(AnnouncementsScreen.name);
+        context.go(AnnouncementsScreen.name);
       }
       _animation.reset();
     }
   }
 
-  get _error => emit(Error());
+  get firstInitialization async {
+    await FirebaseFirestore.instance.collection('ads').get().then((querySnapshot) async {
+      listOfAds = querySnapshot.docs.map((ads) => ads.data()['url']).toList();
+      user = await localStorage.user;
+      nameController.text = user.name;
+      emailController.text = user.email;
+      contactController.text = user.contact;
+    });
+    _loaded;
+  }
+
   get _loading => emit(Loading());
+
+  get _error => const ErrorDialog();
+
   get _loaded => emit(
         Loaded(
           listOfAds: listOfAds,
-          user: user,
-          heightTween: _heightTween,
-          widthTween: _widthTween,
           rotationTween: _rotationTween,
           opacityTween: _opacityTween,
+          heightTween: _heightTween,
+          addsHeightTween: _addsHeightTween,
+          widthTween: _widthTween,
           borderRadiusTween: _borderRadiusTween,
           boxShadowTween: _boxShadowTween,
-          addSize: _addSize,
+          user: user,
           nameFormKey: nameFormKey,
           nameController: nameController,
           emailFormKey: emailFormKey,
@@ -342,4 +296,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           contactController: contactController,
         ),
       );
+
+  @override
+  Future<void> close() {
+    nameController.dispose();
+    emailController.dispose();
+    contactController.dispose();
+    _animation.dispose();
+    return super.close();
+  }
 }

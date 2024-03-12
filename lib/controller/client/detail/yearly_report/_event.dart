@@ -1,18 +1,17 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class YearReportWidgetEvent {}
+abstract class YearlyReportWidgetEvent {}
 
-final class SeeMoreTab extends YearReportWidgetEvent {
-  final BuildContext context;
-  final YearReport payment;
 
-  SeeMoreTab({required this.context, required this.payment});
+final class SeeMoreTab extends YearlyReportWidgetEvent {
+  final YearlyReport payment;
+
+  SeeMoreTab({required this.payment});
 }
-
-final class PaymentStatus extends YearReportWidgetEvent {
+final class PaymentVerificationStatus extends YearlyReportWidgetEvent {
   final int? status;
-  final YearReport yearReport;
+  final YearlyReport report;
 
-  PaymentStatus({required this.status, required this.yearReport});
+  PaymentVerificationStatus({required this.status,required this.report});
 }

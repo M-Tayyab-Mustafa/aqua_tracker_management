@@ -36,7 +36,7 @@ String? confirmPasswordValidation(String? value, String passwordValue) {
 }
 
 String? dropDownFormFieldValidatorForCompanyField(String? value) {
-  if (value == null || value.isEmpty || value == 'Select company') {
+  if (value == null || value.isEmpty || value == 'Select your company') {
     return 'Please Select your company';
   } else {
     return null;
@@ -67,11 +67,11 @@ String? simpleFieldValidation(String? value) {
   }
 }
 
-String? companyNameValidation(String? value, List companiesDocs) {
+String? companyNameValidation(String? value, List listOfCompaniesDocs) {
   if (value == null || value.isEmpty) {
     return 'This field can\'t be empty';
-  } else if (companiesDocs.isNotEmpty) {
-    for (var doc in companiesDocs) {
+  } else if (listOfCompaniesDocs.isNotEmpty) {
+    for (var doc in listOfCompaniesDocs) {
       if (doc.id == value) {
         return 'Company Name Already Existed';
       }

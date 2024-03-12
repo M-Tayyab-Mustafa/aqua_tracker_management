@@ -1,4 +1,4 @@
-# aqua_tracker_management
+# aqua_tracker_managements
 
 A new Flutter project.
 

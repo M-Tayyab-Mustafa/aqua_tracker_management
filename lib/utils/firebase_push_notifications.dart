@@ -1,9 +1,16 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+import 'package:aqua_tracker_managements/controller/sign_in/_bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
+import '../controller/manager/home/_bloc.dart' as manager_home_bloc;
+import '../view/sign_in/sign_in.dart';
+import 'constants.dart';
+import 'env.dart';
 
 class FirebasePushNotifications {
   final _firebaseMessaging = FirebaseMessaging.instance;
@@ -22,7 +29,12 @@ class FirebasePushNotifications {
 
   Future<void> requestPermission() async {
     await _firebaseMessaging
-        .requestPermission(announcement: true, carPlay: true, criticalAlert: true, provisional: true)
+        .requestPermission(
+      announcement: true,
+      carPlay: true,
+      criticalAlert: true,
+      provisional: true,
+    )
         .then((notificationSettings) {
       if (notificationSettings.authorizationStatus == AuthorizationStatus.authorized ||
           notificationSettings.authorizationStatus == AuthorizationStatus.provisional) {
@@ -34,13 +46,34 @@ class FirebasePushNotifications {
   }
 
   Future<void> _initFirebasePushNotification() async {
-    const androidNotificationChannel =
-        AndroidNotificationChannel('my_notifications', 'high_importance_channel', importance: Importance.high);
+    const androidNotificationChannel = AndroidNotificationChannel(
+      'my_notifications',
+      'high_importance_channel',
+      importance: Importance.high,
+    );
     final platform = _localNotification.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     await platform?.createNotificationChannel(androidNotificationChannel);
+
+    FirebaseMessaging.onMessage.listen(
+      (remoteMessage) => _handleNotification(remoteMessage),
+    );
   }
 
-  static RemoteNotification remoteMessageToRemoteNotification(RemoteMessage remoteMessage) {
+  Future<void> _handleNotification(
+    RemoteMessage remoteMessage,
+  ) async {
+    RemoteNotification remoteNotification = _remoteMessageToRemoteNotification(remoteMessage);
+    if (remoteNotification.android!.channelId == 'Sign Out') {
+      await FirebaseAuth.instance.signOut();
+      manager_home_bloc.HomeBloc.backTabDialogForHomeScreen = false;
+      SignInBloc.backTabDialogForSignInScreen = true;
+      await localStorage.removeUser().whenComplete(() => context.pushReplacement(SignInScreen.name));
+    }
+  }
+
+  RemoteNotification _remoteMessageToRemoteNotification(
+    RemoteMessage remoteMessage,
+  ) {
     AndroidNotification? androidNotification;
     AppleNotification? appleNotification;
     WebNotification? webNotification;
@@ -80,8 +113,7 @@ class FirebasePushNotifications {
       Uri.parse('https://fcm.googleapis.com/fcm/send'),
       headers: {
         'Content-Type': 'application/json',
-        'Authorization':
-            'key=AAAATeQA6lw:APA91bGSqy2pPlX6Piw3bKYLLm2VNB8RPmGtOO-FVGvTTJHW_AdBiFiNRp2lvTnuKFT1elzdGWQRMvLYLrvkch4derPYoJgWs6nkC0H5H-SCQ2p8CGDeG5kUw5ep7WJBtf-67GW_OPWU',
+        'Authorization': 'key=$messagingAPIKey',
       },
       body: jsonEncode(
         {

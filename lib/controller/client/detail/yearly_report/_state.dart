@@ -1,12 +1,12 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class YearReportWidgetState {}
+abstract class YearlyReportWidgetState {}
 
-final class Loading extends YearReportWidgetState {}
+final class Loading extends YearlyReportWidgetState {}
 
-final class Loaded extends YearReportWidgetState {
-  final List<YearReport> yearlyPayments;
+final class Loaded extends YearlyReportWidgetState {
+  final List<YearlyReport> yearlyPayments;
   final ScrollController verticalController;
   final ScrollController horizontalController;
 

@@ -3,14 +3,14 @@ part of '_bloc.dart';
 @immutable
 abstract class AddClientEvent {}
 
-final class SubmitEmail extends AddClientEvent {
+final class EmailChecking extends AddClientEvent {
   final BuildContext dialogContext;
 
-  SubmitEmail({required this.dialogContext});
+  EmailChecking({required this.dialogContext});
 }
 
-final class SubmitClient extends AddClientEvent {
+final class SubmitNewClient extends AddClientEvent {
   final BuildContext dialogContext;
 
-  SubmitClient({required this.dialogContext});
+  SubmitNewClient({required this.dialogContext});
 }

@@ -3,22 +3,21 @@ part of '_bloc.dart';
 @immutable
 abstract class EditClientEvent {}
 
-final class AddLocation extends EditClientEvent {
+final class AddClientLocation extends EditClientEvent {
   final BuildContext dialogContext;
   final Client client;
 
-  AddLocation({required this.dialogContext, required this.client});
+  AddClientLocation({required this.dialogContext, required this.client});
 }
 
-final class DeleteLocation extends EditClientEvent {
-  final Location location;
+final class DeleteClientLocation extends EditClientEvent {
+  final int index;
 
-  DeleteLocation({required this.location});
+  DeleteClientLocation({required this.index});
 }
 
 final class EditConfirm extends EditClientEvent {
   final BuildContext dialogContext;
-  final Client client;
 
-  EditConfirm({required this.dialogContext, required this.client});
+  EditConfirm({required this.dialogContext});
 }

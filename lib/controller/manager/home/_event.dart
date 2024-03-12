@@ -1,44 +1,29 @@
 part of '_bloc.dart';
 
 @immutable
-abstract final class HomeEvent {}
+abstract class HomeEvent {}
 
-final class SignOut extends HomeEvent {
-  final BuildContext context;
-
-  SignOut({required this.context});
-}
+final class SignOut extends HomeEvent {}
 
 final class ChangeName extends HomeEvent {
-  final BuildContext context;
+  final BuildContext dialogContext;
 
-  ChangeName({required this.context});
+  ChangeName({required this.dialogContext});
 }
 
 final class ChangeEmail extends HomeEvent {
-  final BuildContext context;
+  final BuildContext dialogContext;
 
-  ChangeEmail({required this.context});
+  ChangeEmail({required this.dialogContext});
 }
 
 final class ChangeContact extends HomeEvent {
-  final BuildContext context;
+  final BuildContext dialogContext;
 
-  ChangeContact({required this.context});
+  ChangeContact({required this.dialogContext});
 }
 
-final class AboutUs extends HomeEvent {
-  final BuildContext context;
-
-  AboutUs({required this.context});
-}
-
-final class ProfileImagePreview extends HomeEvent {
-  final BuildContext context;
-  final String imageUrl;
-
-  ProfileImagePreview({required this.context, required this.imageUrl});
-}
+final class AboutUs extends HomeEvent {}
 
 final class Client extends HomeEvent {}
 

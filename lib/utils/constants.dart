@@ -1,128 +1,132 @@
-import 'dart:convert';
 import 'dart:math';
+import 'package:aqua_tracker_managements/utils/local_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
-import 'package:geocoding/geocoding.dart' as geocoding;
-import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
-//* Asset font Family Name
-const String customFontFamily = 'AmazonBT';
-
-//* Firebase Collections Keys
+//? Firebase Collections Keys
 String fBCompanyCollectionKey = 'companies';
 String fBEmployeesCollectionKey = 'employees';
 String fBBranchesCollectionKey = 'branches';
-String fBClientsCollectionKey = 'clients';
-String fBReportsCollectionKey = 'reports';
 
-//* Current Device Size
+//? Firebase Company Doc
+Future<DocumentReference> get firebaseCompanyDoc async {
+  return FirebaseFirestore.instance.collection(fBCompanyCollectionKey).doc(
+        (await localStorage.user).companyName,
+      );
+}
+
+//? Full Screen Size
 late Size screenSize;
 
-//* Custom Paddings
-double get smallestPadding => 5;
-double get smallPadding => 10;
-double get mediumPadding => 20;
-double get largePadding => 30;
+//? Border Radius's
+const double smallestBorderRadius = 4;
+const double smallBorderRadius = 20;
+const double mediumBoardRadius = 30;
+const double largeBorderRadius = 50;
 
-//* Custom Border Radius's
-double get smallestBorderRadius => 4;
-double get smallBorderRadius => 20;
-double get mediumBoardRadius => 30;
-double get largeBorderRadius => 50;
+//?
+late Color _buttonColors;
+
+set buttonColors(Color color) => _buttonColors = color;
+Color get buttonColors => _buttonColors;
+
+//? Table
+const TextAlign tableTextAlign = TextAlign.center;
+const TableCellVerticalAlignment tableCellVerticalAlignment = TableCellVerticalAlignment.middle;
+
+//? Table Heading Text Style
+TextStyle tableHeadingTextStyle(BuildContext context) {
+  return Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold);
+}
+
+//? Local Storage Reference variable
+LocalStorage localStorage = LocalStorage();
+
+//? Paddings
+const double smallestPadding = 5;
+const double smallPadding = 10;
+const double mediumPadding = 20;
+const double largePadding = 30;
+
+//? Buttons Size
+const Size buttonSize = Size(50, 50);
+const customButtonTextPadding = MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: mediumPadding));
+
+//? Request Time Out Duration
+const Duration timeOutDuration = Duration(seconds: 30);
+
+//? Firebase Storage Instances
+final firebaseStorageReference = FirebaseStorage.instance.ref();
+
+//? Firebase RealTime Database Reference
+final firebaseDatabaseReference = FirebaseDatabase.instance.ref();
+
+//? Error Flutter Toast
+Future<bool?> showErrorToast({required String msg}) =>
+    Fluttertoast.showToast(msg: msg, backgroundColor: Colors.redAccent, textColor: Colors.white);
+
+//? Prefixed Value for Contact
+String get contactFieldDefaultValue => '+92 ';
+
+//? Branch Name That is selected by default
+String defaultBranchName = 'All';
+
+//* Pages Navigation Transition Duration
+const Duration transitionDuration = Duration(milliseconds: 600);
+
+//* Image Slider Auto Play Interval Duration in milliseconds
+const int autoTimeInterval = 40000;
+
+//? Key For Fetching Head Quarter
+const String headQuarterKey = 'Head Quarter';
+
+//? Degree to rad.
+double angle({required double angle}) => angle * (pi / 180);
+
+//? Font Style Name
+const String customFontFamily = 'AmazonBT';
+
+//? Check Email Exists in The Firebase or user Already Register with provided Email
+Future<bool?> isEmailAlreadyExists(String email) async {
+  try {
+    await auth.FirebaseAuth.instance
+        .createUserWithEmailAndPassword(email: email, password: 'somePassword')
+        .then((credentials) => credentials.user!.delete());
+    return false;
+  } on auth.FirebaseAuthException catch (e) {
+    developer.log(e.code.toString());
+    showErrorToast(msg: 'User Already Exists With This Email.');
+    return true;
+  } catch (exception) {
+    developer.log(exception.toString());
+    showErrorToast(msg: 'Something went wrong! try again later');
+    return null;
+  }
+}
+
+//? Employees Post Key
+String deliveryManPost = 'Delivery boy';
+String managerPost = 'Manager';
 
 final InternetConnectionChecker internetConnectionChecker = InternetConnectionChecker.createInstance(
   checkInterval: const Duration(seconds: 1),
 );
 
-//* Employees Post Key
-String deliveryManPost = 'Delivery boy';
-String managerPost = 'Manager';
-
-//* Error Flutter Toast
-Future<bool?> showErrorToast({required String msg}) =>
-    Fluttertoast.showToast(msg: msg, backgroundColor: Colors.redAccent, textColor: Colors.white);
-
-//* Prefixed Value for Contact
-String get contactFieldDefaultValue => '+92 ';
-
-//* Degree to rad.
-double angle({required double angle}) => angle * (pi / 180);
-
-//* Button Sized
-double buttonSize = 35;
-
-//* Get Address From Given Latitude and Longitude
-Future<String> addressFromLatLong({required String lat, required String long}) async {
-  var placeMarker = await geocoding.placemarkFromCoordinates(double.parse(lat), double.parse(long));
-  return '${placeMarker.first.street}, ${placeMarker.first.subLocality}, ${placeMarker.first.locality}';
-}
-
-//! Check Email Exists in The Firebase or user Already Register with provided Email
-Future<bool> isEmailAlreadyExists(String email) async {
-  var firebaseAuth = auth.FirebaseAuth.instance;
-  try {
-    await firebaseAuth
-        .createUserWithEmailAndPassword(email: email, password: 'email-already-in-use')
-        .then((credentials) => credentials.user!.delete());
-    return false;
-  } on auth.FirebaseAuthException catch (exception) {
-    if (exception.code == 'email-already-in-use') {
-      showErrorToast(msg: 'User Already Exists With This Email.');
-    }
-    return true;
-  } catch (exception) {
-    showErrorToast(msg: 'Something went wrong! try again later');
-    return true;
-  }
-}
-
-//! Send Password Through Email
-Future sendPasswordEmail({
-  required String clientEmail,
-  required String ownerEmail,
-  required String password,
-  required String clientName,
-}) async {
-  final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-  await http.post(
-    headers: {'origin': 'http://localhost', 'Content-Type': 'application/json'},
-    url,
-    body: jsonEncode({
-      'service_id': 'service_2qn0kbl',
-      'template_id': 'template_zrktqqg',
-      'user_id': 'dipRaBY6t-q4FK293',
-      'template_params': {
-        'owner_email': ownerEmail,
-        'to_name': clientName,
-        'to_email': clientEmail,
-        'user_password': password,
-      }
-    }),
-  );
-}
-
-//! Table
-const TextAlign tableTextAlign = TextAlign.center;
-const TableCellVerticalAlignment tableCellVerticalAlignment = TableCellVerticalAlignment.middle;
-//* Table Heading Text Style
-TextStyle tableHeadingTextStyle(BuildContext context) {
-  return Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold);
-}
-
-//! Get Current Location of The user
-Future<Position?> get currentLocation => _currentLocation();
-
-Future<Position?> _currentLocation() async {
+Future<Position?> currentLocation() async {
   LocationPermission locationPermission = await GeolocatorPlatform.instance.requestPermission();
   if (locationPermission == LocationPermission.always || locationPermission == LocationPermission.whileInUse) {
     return await GeolocatorPlatform.instance.getCurrentPosition();
   } else {
-    showErrorToast(msg: 'Location Permission is required to process further please allow location permission');
+    Fluttertoast.showToast(msg: 'Location Permission is required to process further please allow location permission');
     await GeolocatorPlatform.instance.openAppSettings().whenComplete(() {
-      _currentLocation();
+      currentLocation();
     });
   }
   return null;
