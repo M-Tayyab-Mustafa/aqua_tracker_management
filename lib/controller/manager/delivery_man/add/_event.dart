@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class AddDeliveryManEvent {}
+abstract final class AddDeliveryManEvent {}
 
 final class Next extends AddDeliveryManEvent {
   final BuildContext dialogContext;

@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class AnnouncementsState {}
+abstract final class AnnouncementsState {}
 
 final class Loading extends AnnouncementsState {}
 

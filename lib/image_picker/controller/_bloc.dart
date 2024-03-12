@@ -29,7 +29,7 @@ class ImagePickerBloc extends Bloc<ImagePickerEvent, ImagePickerState> {
                     if (pickedImage != null) {
                       imageFile = File(pickedImage.path);
                       event.image.call(imageFile!);
-                      loaded;
+                      _loaded;
                     } else {
                       showErrorToast(msg: 'You Cancel Image Selection');
                     }
@@ -45,7 +45,7 @@ class ImagePickerBloc extends Bloc<ImagePickerEvent, ImagePickerState> {
                     if (pickedImage != null) {
                       imageFile = File(pickedImage.path);
                       event.image.call(imageFile!);
-                      loaded;
+                      _loaded;
                     } else {
                       showErrorToast(msg: 'You Cancel Image Selection');
                     }
@@ -64,9 +64,9 @@ class ImagePickerBloc extends Bloc<ImagePickerEvent, ImagePickerState> {
   }
 
   init() {
-    loaded;
+    _loaded;
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(imageFile: imageFile));
+  get _loaded => emit(Loaded(imageFile: imageFile));
 }

@@ -49,7 +49,7 @@ class DeliveryManLocationBloc extends Bloc<DeliveryManLocationEvent, DeliveryMan
                     backgroundColor: Theme.of(context).primaryColor));
               }
             }
-            loaded;
+            _loaded;
           });
         });
       } else {
@@ -64,7 +64,7 @@ class DeliveryManLocationBloc extends Bloc<DeliveryManLocationEvent, DeliveryMan
   addDeliveryManMarker(BuildContext context, {required Employee deliveryMan, required LatLng latLng}) async {}
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(initialCameraPosition: initialCameraPosition, markers: markers));
+  get _loaded => emit(Loaded(initialCameraPosition: initialCameraPosition, markers: markers));
   get error => emit(Error());
 
   @override

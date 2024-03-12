@@ -21,7 +21,7 @@ class EditDeliveryBoyBloc extends Bloc<EditDeliveryBoyEvent, EditDeliveryBoyStat
   final contactController = TextEditingController(text: contactFieldDefaultValue);
 
   EditDeliveryBoyBloc() : super(Loading()) {
-    loaded;
+    _loaded;
     on<Submit>((event, emit) async {
       if (formKey.currentState!.validate()) {
         loading;
@@ -64,7 +64,7 @@ class EditDeliveryBoyBloc extends Bloc<EditDeliveryBoyEvent, EditDeliveryBoyStat
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(
+  get _loaded => emit(Loaded(
         formKey: formKey,
         nameController: nameController,
         contactController: contactController,

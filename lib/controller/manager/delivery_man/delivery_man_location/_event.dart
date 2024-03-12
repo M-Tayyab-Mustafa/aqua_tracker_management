@@ -1,3 +1,3 @@
 part of '_bloc.dart';
 
-abstract class DeliveryManLocationEvent {}
+abstract final class DeliveryManLocationEvent {}

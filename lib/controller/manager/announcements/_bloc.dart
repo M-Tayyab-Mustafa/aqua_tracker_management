@@ -113,7 +113,7 @@ class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
           .toList()
           .reversed
           .toList();
-      loaded;
+      _loaded;
     });
   }
 
@@ -123,7 +123,7 @@ class AnnouncementsBloc extends Bloc<AnnouncementsEvent, AnnouncementsState> {
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(cardSize: cardSize, announcements: announcements));
+  get _loaded => emit(Loaded(cardSize: cardSize, announcements: announcements));
   get error => emit(Error());
 
   @override

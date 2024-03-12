@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class SalesEvent {}
+abstract final class SalesEvent {}
 
 final class Add extends SalesEvent {
   final BuildContext context;

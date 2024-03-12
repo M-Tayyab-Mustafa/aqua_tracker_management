@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class YearReportWidgetEvent {}
+abstract final class YearReportWidgetEvent {}
 
 final class SeeMoreTab extends YearReportWidgetEvent {
   final BuildContext context;

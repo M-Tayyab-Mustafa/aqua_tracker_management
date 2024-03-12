@@ -22,7 +22,7 @@ import '../../utils/widget/error_dialog.dart';
 import '../../utils/widget/text_field.dart';
 
 import '../../screen/manager/home/home.dart' as manager;
-import '../../screen/deliveryman/home.dart' as deliveryman;
+import '../../screen/deliveryman/home/home.dart' as deliveryman;
 
 part '_event.dart';
 part '_state.dart';

@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class LocationPickFromMapState {}
+abstract final class LocationPickFromMapState {}
 
 final class Loading extends LocationPickFromMapState {}
 

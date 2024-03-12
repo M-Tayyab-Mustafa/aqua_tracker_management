@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class EditClientEvent {}
+abstract final class EditClientEvent {}
 
 final class AddLocation extends EditClientEvent {
   final BuildContext dialogContext;

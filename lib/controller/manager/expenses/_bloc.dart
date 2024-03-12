@@ -154,7 +154,7 @@ class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
           individualBars = individualBars.reversed.toList();
         }
 
-        loaded;
+        _loaded;
       });
     } catch (e) {
       developer.log(e.toString());
@@ -163,7 +163,7 @@ class ExpensesBloc extends Bloc<ExpensesEvent, ExpensesState> {
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(
+  get _loaded => emit(Loaded(
         formKey: formKey,
         verticalScrollbarController: verticalScrollbarController,
         horizontalScrollbarController: horizontalScrollbarController,

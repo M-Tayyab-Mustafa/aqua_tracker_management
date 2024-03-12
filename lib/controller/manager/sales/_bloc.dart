@@ -127,7 +127,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
               sales.length, (index) => IndividualBar(x: index, y: sales[index].amount, date: sales[index].date));
           individualBars = individualBars.reversed.toList();
         }
-        loaded;
+        _loaded;
       });
     } catch (e) {
       developer.log(e.toString());
@@ -136,7 +136,7 @@ class SalesBloc extends Bloc<SalesEvent, SalesState> {
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(
+  get _loaded => emit(Loaded(
         sales: sales,
         individualBars: individualBars,
         maxYAxis: maxYAxis,

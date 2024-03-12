@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class AddClientEvent {}
+abstract final class AddClientEvent {}
 
 final class SubmitEmail extends AddClientEvent {
   final BuildContext dialogContext;

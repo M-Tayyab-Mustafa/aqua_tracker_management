@@ -18,7 +18,7 @@ class PickLocationFromMapBloc extends Bloc<LocationPickFromMapEvent, LocationPic
       if (position != null) {
         currentUserLocation = LatLng(position.latitude, position.longitude);
       }
-      loaded;
+      _loaded;
     });
     on<AddMarkerEvent>((event, emit) async {
       markers.clear();
@@ -32,7 +32,7 @@ class PickLocationFromMapBloc extends Bloc<LocationPickFromMapEvent, LocationPic
           icon: BitmapDescriptor.defaultMarker,
         ),
       );
-      loaded;
+      _loaded;
     });
   }
 
@@ -40,7 +40,7 @@ class PickLocationFromMapBloc extends Bloc<LocationPickFromMapEvent, LocationPic
     mapController = controller;
   }
 
-  get loaded => emit(Loaded(markers: markers));
+  get _loaded => emit(Loaded(markers: markers));
 
   @override
   Future<void> close() {

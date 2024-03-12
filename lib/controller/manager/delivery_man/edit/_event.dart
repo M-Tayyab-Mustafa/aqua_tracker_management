@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class EditDeliveryBoyEvent {}
+abstract final class EditDeliveryBoyEvent {}
 
 final class Submit extends EditDeliveryBoyEvent {
   final BuildContext dialogContext;

@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class ImagePickerState {}
+abstract final class ImagePickerState {}
 
 final class Loading extends ImagePickerState {}
 

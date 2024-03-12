@@ -1,11 +1,11 @@
 part of '_cubit.dart';
 
 @immutable
-abstract class ClientDetailState {}
+abstract final class ClientDetailState {}
 
-class Loading extends ClientDetailState {}
+final class Loading extends ClientDetailState {}
 
-class Loaded extends ClientDetailState {
+final class Loaded extends ClientDetailState {
   final String clientUid;
   final Location location;
   final List<Widget> tabs;
@@ -21,4 +21,4 @@ class Loaded extends ClientDetailState {
   });
 }
 
-class Error extends ClientDetailState {}
+final class Error extends ClientDetailState {}

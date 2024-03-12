@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class YearReportWidgetState {}
+abstract final class YearReportWidgetState {}
 
 final class Loading extends YearReportWidgetState {}
 

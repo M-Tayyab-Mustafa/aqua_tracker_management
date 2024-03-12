@@ -41,7 +41,7 @@ class YearReportWidgetBloc extends Bloc<YearReportWidgetEvent, YearReportWidgetS
         this.user = user;
         yearlyReport =
             List.from(reports.data()!['yearly_reports'].map<YearReport>((report) => YearReport.fromMap(report)));
-        loaded;
+        _loaded;
       }),
     );
     on<SeeMoreTab>((event, emit) {
@@ -64,7 +64,7 @@ class YearReportWidgetBloc extends Bloc<YearReportWidgetEvent, YearReportWidgetS
             .collection(fBReportsCollectionKey)
             .doc('${location.latitude},${location.longitude}')
             .update({'yearly_reports': yearlyReport.map((e) => e.toMap()).toList()});
-        loaded;
+        _loaded;
       }
     });
   }
@@ -81,7 +81,7 @@ class YearReportWidgetBloc extends Bloc<YearReportWidgetEvent, YearReportWidgetS
 
   get loading => emit(Loading());
 
-  get loaded => emit(Loaded(
+  get _loaded => emit(Loaded(
       yearlyPayments: yearlyReport,
       verticalController: verticalController,
       horizontalController: horizontalController));

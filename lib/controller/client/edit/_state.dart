@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class EditClientState {}
+abstract final class EditClientState {}
 
 final class Loading extends EditClientState {}
 

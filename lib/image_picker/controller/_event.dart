@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class ImagePickerEvent {}
+abstract final class ImagePickerEvent {}
 
 final class NewImageSourceDialog extends ImagePickerEvent {
   final BuildContext context;

@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class ExpensesState {}
+abstract final class ExpensesState {}
 
 final class Loading extends ExpensesState {}
 

@@ -30,12 +30,12 @@ class AddDeliveryManBloc extends Bloc<AddDeliveryManEvent, AddDeliveryManState> 
   final nameController = TextEditingController();
   File? imageFile;
   AddDeliveryManBloc() : super(Loading()) {
-    loaded;
+    _loaded;
     on<Next>((event, emit) {
       if (emailFormKey.currentState!.validate()) {
         loading;
         isEmailAlreadyExists(emailController.text).then((exists) async {
-          loaded;
+          _loaded;
           if (!exists) {
             await showDialog(
               context: event.dialogContext,
@@ -158,7 +158,7 @@ class AddDeliveryManBloc extends Bloc<AddDeliveryManEvent, AddDeliveryManState> 
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(emailFormKey: emailFormKey, emailController: emailController));
+  get _loaded => emit(Loaded(emailFormKey: emailFormKey, emailController: emailController));
   get error => emit(Error());
 
   @override

@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class ClientEvent {}
+abstract final class ClientEvent {}
 
 final class Add extends ClientEvent {}
 

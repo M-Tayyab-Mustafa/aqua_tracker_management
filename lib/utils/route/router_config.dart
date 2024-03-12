@@ -14,7 +14,10 @@ import '../../screen/basic/not_verified.dart';
 import '../../screen/client/client.dart';
 import '../../screen/client/details/details.dart';
 import '../../screen/sign_in.dart';
-import '../../screen/deliveryman/home.dart' as deliveryman;
+//! Delivery Man Blocs Paths
+import '../../controller/delivery_man/home/_bloc.dart' as deliveryman;
+//! Delivery Man Screens Paths
+import '../../screen/deliveryman/home/home.dart' as deliveryman;
 //! Manager Blocs Paths
 import '../../controller/manager/sales/_bloc.dart' as manager;
 import '../../controller/manager/home/_bloc.dart' as manager;
@@ -162,7 +165,10 @@ GoRouter get routerConfig => GoRouter(
           path: deliveryman.HomeScreen.path,
           pageBuilder: (context, state) => ScreenTransition.screenFadeTransition(
             state: state,
-            child: const deliveryman.HomeScreen(),
+            child: BlocProvider(
+              create: (context) => deliveryman.HomeBloc(),
+              child: const deliveryman.HomeScreen(),
+            ),
           ),
         ),
         //! Navigate To Client Screen

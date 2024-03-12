@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class DeliveryManEvent {}
+abstract final class DeliveryManEvent {}
 
 final class Add extends DeliveryManEvent {}
 

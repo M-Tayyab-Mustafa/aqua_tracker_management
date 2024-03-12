@@ -12,13 +12,13 @@ part '_state.dart';
 
 class LocationPickerDialogBloc extends Bloc<LocationPickerDialogEvent, LocationPickerDialogState> {
   LocationPickerDialogBloc() : super(Loading()) {
-    loaded;
+    _loaded;
     on<UseCurrentLocation>((event, emit) async {
       loading;
       await GeolocatorPlatform.instance.requestPermission().then((locationPermission) async {
         if (locationPermission == LocationPermission.always || locationPermission == LocationPermission.whileInUse) {
           await GeolocatorPlatform.instance.getCurrentPosition().then((position) async {
-            loaded;
+            _loaded;
             Navigator.pop(event.dialogContext, LatLng(position.latitude, position.longitude));
           }).timeout(const Duration(seconds: 10), onTimeout: () {
             error;
@@ -44,5 +44,5 @@ class LocationPickerDialogBloc extends Bloc<LocationPickerDialogEvent, LocationP
 
   get loading => emit(Loading());
   get error => emit(Error());
-  get loaded => emit(Loaded());
+  get _loaded => emit(Loaded());
 }

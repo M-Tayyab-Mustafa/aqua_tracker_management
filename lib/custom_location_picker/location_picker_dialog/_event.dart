@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class LocationPickerDialogEvent {}
+abstract final class LocationPickerDialogEvent {}
 
 final class UseCurrentLocation extends LocationPickerDialogEvent {
   final BuildContext dialogContext;

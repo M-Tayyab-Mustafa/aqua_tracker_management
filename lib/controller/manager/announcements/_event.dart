@@ -1,7 +1,7 @@
 part of '_bloc.dart';
 
 @immutable
-abstract class AnnouncementsEvent {}
+abstract final class AnnouncementsEvent {}
 
 final class BroadCast extends AnnouncementsEvent {
   final BuildContext context;

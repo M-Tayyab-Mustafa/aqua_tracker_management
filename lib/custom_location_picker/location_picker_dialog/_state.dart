@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class LocationPickerDialogState {}
+abstract final class LocationPickerDialogState {}
 
 final class Loading extends LocationPickerDialogState {}
 

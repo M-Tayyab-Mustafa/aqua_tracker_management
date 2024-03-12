@@ -41,7 +41,7 @@ class DeliveryManBloc extends Bloc<DeliveryManEvent, DeliveryManState> {
               deliveryMans.add(employee);
             }
           }
-          loaded;
+          _loaded;
         });
       } catch (e) {
         log(e.toString());
@@ -208,7 +208,7 @@ class DeliveryManBloc extends Bloc<DeliveryManEvent, DeliveryManState> {
             deliveryMans.add(employee);
           }
         }
-        loaded;
+        _loaded;
       });
     } catch (e) {
       log(e.toString());
@@ -217,6 +217,6 @@ class DeliveryManBloc extends Bloc<DeliveryManEvent, DeliveryManState> {
   }
 
   get loading => emit(Loading());
-  get loaded => emit(Loaded(deliveryMans: deliveryMans));
+  get _loaded => emit(Loaded(deliveryMans: deliveryMans));
   get error => emit(Error());
 }

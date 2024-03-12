@@ -1,6 +1,6 @@
 part of '_bloc.dart';
 
-abstract class AddDeliveryManState {}
+abstract final class AddDeliveryManState {}
 
 final class Loading extends AddDeliveryManState {}
 
